@@ -1,0 +1,82 @@
+---
+title: "ZBao_ESM262_HW3"
+author: "Zhiping Bao"
+date: "6/3/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+Example Data
+```{r}
+fish_price_1 <- matrix(c(16,14,10,25,20), nrow = 5, ncol = 1, byrow = T,
+                       dimnames = list(c("lingcod","rockfish","sole","halibut","yellowtail"),
+                                       c("price")))
+fish_price_1
+
+fish_catch_1 <- matrix(c(23,15,10,3,14, 120,140,20,120,60, 40,55,23,13,9, 7,25,13,42,22,11,23,13,15,66), nrow = 5, ncol = 5, byrow = T,
+                       dimnames = list(c("lingcod","rockfish","sole","halibut","yellowtail"),
+                                         c("SB","VTA","LA","OC","SD")))
+fish_catch_1
+setwd("/Users/zbao/Desktop/ZBao_HW3")
+save(fish_price_1, file = "fish_price_1.rda")
+save(fish_catch_1, file = "fish_catch_1.rda")
+```
+Fuction
+Equation 1
+```{r}
+fish_summary = function(price,catch, plot = F){
+  most_fish = list(colnames(catch), rownames(catch)[apply(catch, 2, which.max)])
+  total_rev = sum(price[,1] * catch)
+  loc_rev = price[,1] * catch
+  loc_rev = colSums(loc_rev)
+  loc_rev_df = data.frame(loc_rev)
+  loc_rev_df$location = c(rownames(loc_rev_df))
+   if (plot) {
+     lb = sprintf("The total revenue is %d dollars", total_rev)
+     p = ggplot(loc_rev_df, aes(location, loc_rev, fill=location))+geom_col()+
+     labs(y="revenue in dollars")+annotate("text", x=2, y=5000, label=lb, col="red")
+   }
+   else p=NULL
+return(list(MostFrequent = most_fish, TotalRevenue = total_rev, Revenue_by_Location = loc_rev_df, plot = p))
+  }
+
+```
+
+Example 1
+```{r}
+fish_summary(fish_price_1, fish_catch_1,plot = T)
+```
+
+Equation 2
+
+```{r}
+growth_rate = function(a,b,c,d,temp){
+  G <- (a+b*temp+c*temp^2+d*temp^3)
+  return(G)
+}
+```
+Example 2
+```{r}
+growth_rate(-0.497,0.1656,0.08588,-0.004266,14.3)
+
+```
+
+Test
+```{r}
+library(testthat)
+
+test1 <- test_that("fish_summary_works",{expect_that(fish_summary(fish_price_1,fish_catch_1)$TotalRevenue > 5000, is_true())})
+test1
+
+test2<-test_that("growth_rate_test", {expect_that(growth_rate(-.497,0.1656,0.08588,-.004266,14.3)>0, is_true())})
+test2
+
+```
+Build 
